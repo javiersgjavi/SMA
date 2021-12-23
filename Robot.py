@@ -45,7 +45,6 @@ class Robot():
         n_chemical = self.check_chemical(neighbours)
         return neighbours, n_tissue, n_chemical
 
-
     def random_walk(self, current_cell, neighbours):
         # Select random movement without 
         random_movements = np.random.choice(neighbours, len(neighbours), replace=False)
@@ -63,12 +62,12 @@ class Robot():
         neighbours, n_tissue, n_chemical = self.get_info_neighbours(grid)
 
         if current_cell.get_tissue() != 0:
-            # Destroy tissue
-            pass
+            current_cell.attack_tissue()
+            # Liberate chem
 
         elif n_tissue:
-            #Move to tissue
-            pass
+            self.random_walk(current_cell=current_cell, neighbours=n_tissue)
+
         elif n_chemical:
             # Move to chemical
             pass

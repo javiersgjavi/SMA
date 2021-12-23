@@ -11,6 +11,9 @@ class Cell():
     def get_tissue(self):
         return self.tissue
 
+    def attack_tissue(self):
+        self.tissue -= 1
+
     def set_robot(self, robot):
         self.robot = robot
 
