@@ -1,5 +1,5 @@
-def Cell():
-    def __init__(self, position, robot=False, tissue=None):
+class Cell():
+    def __init__(self, position, robot=False, tissue=0):
         self.position = position
         self.robot = robot
         self.tissue = tissue
@@ -14,8 +14,18 @@ def Cell():
     def set_robot(self, robot):
         self.robot = robot
 
-    def get_chem(self, index):
-        return self.chem[index]
+    def get_chemical(self):
+        return self.chem
 
     def get_position(self):
         return self.position
+
+    def print_cell(self):
+        res = str(self.tissue)
+
+        if self.robot:
+            res = 'X'
+        elif self.tissue == 0:
+            res =  '▢'
+            
+        return res
