@@ -7,6 +7,9 @@ class Robot():
         self.movements = [(i,j) for i in range(-1,2) for j in range(-1,2) if not (i==0 and j==0)]
         self.position = position
 
+    def get_position(self):
+        return self.position
+
     def get_neighbours_cells(self, grid):
         neighbours = []
 
@@ -59,9 +62,6 @@ class Robot():
         current_cell = grid.get_cell(self.position[0], self.position[1])
         neighbours, n_tissue, n_chemical = self.get_info_neighbours(grid)
 
-        for n in n_tissue:
-            print(n.get_position())
-            print(n.get_tissue())
         if current_cell.get_tissue() != 0:
             # Destroy tissue
             pass
@@ -74,7 +74,6 @@ class Robot():
             pass
         else:
             # Random walk
-            print('Random walk')
             self.random_walk(current_cell=current_cell, neighbours=neighbours)
             
             

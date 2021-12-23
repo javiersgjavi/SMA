@@ -6,7 +6,7 @@ from Robot import Robot
 class Grid():
 
     def __init__(self, path=None):
-        grid = pd.read_csv(path)
+        grid = pd.read_csv(path, header=None)
         self.width = grid.shape[0]
         self.height = grid.shape[1]
         self.board = []
@@ -38,12 +38,16 @@ class Grid():
     def get_cell(self, i, j):
         return self.board[i][j]
 
+    def get_shape(self):
+        return (self.width, self.height)
+
     def is_valid_position(self, position):
         if position[0] < 0 or position[0] >= self.width:
             return False
         if position[1] < 0 or position[1] >= self.height:
             return False
         return True
+
 
     def print_board(self):
         msg = ''
@@ -55,3 +59,4 @@ class Grid():
             msg+='\n'
 
         print(msg)
+
