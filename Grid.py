@@ -15,7 +15,7 @@ class Grid():
             row = grid.iloc[i,:].values.tolist()
             self.board.append(row)
         
-    def init_board(self):
+    def init_board(self, beta, initial_charge_chem, threshold, p):
         robots = []
 
         for i in range(self.width):
@@ -24,7 +24,7 @@ class Grid():
                 value = self.board[i][j]
 
                 if value == 'X':
-                    robot = Robot(position=(i, j))
+                    robot = Robot(position=(i, j), beta=beta, charge_chem=initial_charge_chem, threshold=threshold, p=p)
                     robots.append(robot)
                     cell = Cell(position=(i, j), robot=True)
 
@@ -48,6 +48,47 @@ class Grid():
             return False
         return True
 
+# Esta parte hay que reconstruirla
+    def _get_neighbours_cells(self, position, gamma):
+        neighbours = []
+        for i in range(position[0]-gamma, position[0]+gamma+1):
+            for j in range(position[1]-gamma, position[1]+gamma+1):
+                if self.is_valid_position((i,j)) and (i,j) != position:
+                    neighbours.append(self.board[i][j])
+        return neighbours
+
+    def calculate_new_chemical_value(self, cell, alfa, gamma, chem):
+        neighbours = self._get_neighbours_cells(cell.get_position(), gamma)
+        n_chem_value = sum(n.get_chemical()[chem] for n in neighbours)
+        current_value = cell.get_chemical()[chem]
+        injection_value = cell.get_injected_chemical()[chem]
+
+        #         summatory         decay                injection
+        value = (1/(gamma**4))*n_chem_value - (alfa*current_value) + injection_value
+        value = 0 if value < 0 else value
+        cell.set_next_chemical(chem+1, value)
+
+    def update_chemical_values(self, alfa, gamma):
+        set_to_update = set()
+        for i in range(self.width):
+            for j in range(self.height):
+                cells_to_update = []
+                cell = self.board[i][j]
+                injected, chem = cell.get_has_been_injected()
+                if injected:
+                    cells_to_update = self._get_neighbours_cells(cell.get_position(), gamma)
+                    self.calculate_new_chemical_value(cell, alfa, gamma, chem)
+                    for n in cells_to_update:
+                        self.calculate_new_chemical_value(n, alfa, gamma, chem)
+
+                set_to_update.add(cell)
+                set_to_update.update(cells_to_update)
+
+
+
+                
+        for c in set_to_update:
+            c.update_chemical()
 
     def print_board(self):
         msg = ''
