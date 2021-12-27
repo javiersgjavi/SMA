@@ -10,6 +10,7 @@ class Grid():
         self.width = grid.shape[0]
         self.height = grid.shape[1]
         self.board = []
+        self.tissue_quantity = 0
 
         for i in range(self.width):
             row = grid.iloc[i,:].values.tolist()
@@ -29,11 +30,18 @@ class Grid():
                     cell = Cell(position=(i, j), robot=True)
 
                 else:
+                    value = int(value)
                     cell = Cell(position=(i,j), tissue=int(value))
+
+                    if value > 0:
+                        self.tissue_quantity += value
 
                 self.board[i][j] = cell
 
         return robots
+
+    def get_tissue_amount(self):
+        return self.tissue_quantity
 
     def get_cell(self, i, j):
         return self.board[i][j]
@@ -51,8 +59,8 @@ class Grid():
 # Esta parte hay que reconstruirla
     def _get_neighbours_cells(self, position, gamma):
         neighbours = []
-        for i in range(position[0]-gamma, position[0]+gamma+1):
-            for j in range(position[1]-gamma, position[1]+gamma+1):
+        for i in range(position[0]-gamma//2, position[0]+gamma//2+1):
+            for j in range(position[1]-gamma//2, position[1]+gamma//2+1):
                 if self.is_valid_position((i,j)) and (i,j) != position:
                     neighbours.append(self.board[i][j])
         return neighbours
@@ -63,7 +71,7 @@ class Grid():
         current_value = cell.get_chemical()[chem]
         injection_value = cell.get_injected_chemical()[chem]
 
-        #         summatory         decay                injection
+        #         summatory                        decay                injection
         value = (1/(gamma**4))*n_chem_value - (alfa*current_value) + injection_value
         value = 0 if value < 0 else value
         cell.set_next_chemical(chem+1, value)
@@ -84,9 +92,6 @@ class Grid():
                 set_to_update.add(cell)
                 set_to_update.update(cells_to_update)
 
-
-
-                
         for c in set_to_update:
             c.update_chemical()
 

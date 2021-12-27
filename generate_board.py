@@ -9,4 +9,4 @@ def main(path, size):
             f.write(row[:-1]+'\n')
 
 if __name__=='__main__':
-    main('./boards/l_test_2.txt', 20)
+    main('./boards/l_test_3.txt', 50)

@@ -93,27 +93,24 @@ class Robot():
         for i in n_chemical:
             i_chem = i.get_chemical()
             
-            
-            #print(i_chem)
-            if i_chem[0] >= current_chemical[0]:
+            if i_chem[0] >= current_chemical[0] and i_chem[0] != 0 and not i.get_robot():
                 next_moment = i
                 chem_pos = 0
                 
-            elif i_chem[1] >= current_chemical[1]:
+            elif i_chem[1] >= current_chemical[1] and i_chem[1] != 0 and not i.get_robot():
                 next_moment = i
                 chem_pos = 1
 
-            elif i_chem[2] >= current_chemical[2]:
+            elif i_chem[2] >= current_chemical[2] and not i.get_robot():
                 next_moment = i
                 chem_pos = 2
 
+        if next_moment != current_cell:
+            guide = np.random.uniform(0,1)
+            if chem_pos!=2:
+                if (current_chemical[chem_pos+1] == 0) and (chem_pos+1 not in self.injected) and guide < self.p:
+                    self.set_guide_robot(current_cell, chem_pos+2)
 
-        guide = np.random.uniform(0,1)
-        if chem_pos != 2 and (current_chemical[chem_pos+1] == 0) and (chem_pos+1 not in self.injected) and guide < self.p:
-            self.set_guide_robot(current_cell, chem_pos+2)
-
-        else:
-            print(f'Robot {self.get_id()} search chemical {chem_pos+1}')
             self.random_walk(current_cell=current_cell, neighbours=[next_moment])
 
     def actuate(self, grid):
