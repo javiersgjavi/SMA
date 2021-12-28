@@ -1,7 +1,8 @@
-import numpy as np
 import pandas as pd
+
 from Cell import Cell
 from Robot import Robot
+
 
 class Grid():
 
@@ -13,9 +14,9 @@ class Grid():
         self.tissue_quantity = 0
 
         for i in range(self.width):
-            row = grid.iloc[i,:].values.tolist()
+            row = grid.iloc[i, :].values.tolist()
             self.board.append(row)
-        
+
     def init_board(self, beta, initial_charge_chem, threshold, p):
         robots = []
 
@@ -31,7 +32,7 @@ class Grid():
 
                 else:
                     value = int(value)
-                    cell = Cell(position=(i,j), tissue=int(value))
+                    cell = Cell(position=(i, j), tissue=int(value))
 
                     if value > 0:
                         self.tissue_quantity += value
@@ -47,7 +48,7 @@ class Grid():
         return self.board[i][j]
 
     def get_shape(self):
-        return (self.width, self.height)
+        return self.width, self.height
 
     def is_valid_position(self, position):
         if position[0] < 0 or position[0] >= self.width:
@@ -56,12 +57,11 @@ class Grid():
             return False
         return True
 
-# Esta parte hay que reconstruirla
     def _get_neighbours_cells(self, position, gamma):
         neighbours = []
-        for i in range(position[0]-gamma//2, position[0]+gamma//2+1):
-            for j in range(position[1]-gamma//2, position[1]+gamma//2+1):
-                if self.is_valid_position((i,j)) and (i,j) != position:
+        for i in range(position[0] - gamma // 2, position[0] + gamma // 2 + 1):
+            for j in range(position[1] - gamma // 2, position[1] + gamma // 2 + 1):
+                if self.is_valid_position((i, j)) and (i, j) != position:
                     neighbours.append(self.board[i][j])
         return neighbours
 
@@ -71,10 +71,10 @@ class Grid():
         current_value = cell.get_chemical()[chem]
         injection_value = cell.get_injected_chemical()[chem]
 
-        #         summatory                        decay                injection
-        value = (1/(gamma**4))*n_chem_value - (alfa*current_value) + injection_value
+        #         summatory                              decay                injection
+        value = (1 / (gamma ** 4)) * n_chem_value - (alfa * current_value) + injection_value
         value = 0 if value < 0 else value
-        cell.set_next_chemical(chem+1, value)
+        cell.set_next_chemical(chem + 1, value)
 
     def update_chemical_values(self, alfa, gamma):
         set_to_update = set()
@@ -102,7 +102,6 @@ class Grid():
             for j in range(self.height):
                 cell = row[j].print_cell()
                 msg += cell
-            msg+='\n'
+            msg += '\n'
 
         print(msg)
-
