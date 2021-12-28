@@ -2,13 +2,15 @@ from typing_extensions import runtime_checkable
 import numpy as np
 import itertools
 
+
 class Robot():
     new_id = itertools.count()
-    
+
     def __init__(self, position, beta, charge_chem, threshold, p):
         self.id = next(self.new_id)
-        self.movements = [(i,j) for i in range(-1,2) for j in range(-1,2) if not (i==0 and j==0)]
+        self.movements = [(i, j) for i in range(-1, 2) for j in range(-1, 2) if not (i == 0 and j == 0)]
         self.position = position
+        self.original_position = self.position
         self.beta = beta
         self.charge_chem = charge_chem
         self.threshold = threshold
@@ -39,14 +41,14 @@ class Robot():
     def check_chemical(self, neighbours):
         neighbours_chemical = []
         for neighbour in neighbours:
-            if neighbour.get_chemical() != [0,0,0]:
+            if neighbour.get_chemical() != [0, 0, 0]:
                 neighbours_chemical.append(neighbour)
 
         return neighbours_chemical
 
     def check_tissue(self, neighbours):
         neighbours_tissue = []
-        
+
         for neighbour in neighbours:
             if neighbour.get_tissue() != 0:
                 neighbours_tissue.append(neighbour)
@@ -62,7 +64,7 @@ class Robot():
     def random_walk(self, current_cell, neighbours):
         # Select random movement without 
         random_movements = np.random.choice(neighbours, len(neighbours), replace=False)
-        
+
         for new_cell in random_movements:
             if not new_cell.get_robot():
                 new_cell.set_robot(True)
@@ -73,10 +75,10 @@ class Robot():
     def liberate_chemical(self, cell, chem):
         cell.inject_chemical(chem, self.injection_value)
         print(f'Robot {self.get_id()} liberating chemical {chem} in cell {cell.get_position()}')
-        self.injection_value -= self.beta*self.injection_value
+        self.injection_value -= self.beta * self.injection_value
         if round(self.injection_value, 4) == 0:
             self.is_guide = False
-            self.injection_value=None
+            self.injection_value = None
 
     def set_guide_robot(self, current_cell, chem):
         print(f'Robot {self.get_id()} is now guiding chemical {chem}')
@@ -87,15 +89,15 @@ class Robot():
 
     def get_chemical_decision(self, current_cell, n_chemical):
         next_moment = current_cell
-        chem_pos=None
+        chem_pos = None
         current_chemical = current_cell.get_chemical()
         for i in n_chemical:
             i_chem = i.get_chemical()
-            
+
             if i_chem[0] >= current_chemical[0] and i_chem[0] != 0 and not i.get_robot():
                 next_moment = i
                 chem_pos = 0
-                
+
             elif i_chem[1] >= current_chemical[1] and i_chem[1] != 0 and not i.get_robot():
                 next_moment = i
                 chem_pos = 1
@@ -105,14 +107,15 @@ class Robot():
                 chem_pos = 2
 
         if next_moment != current_cell:
-            guide = np.random.uniform(0,1)
-            if chem_pos!=2:
-                if (current_chemical[chem_pos+1] == 0) and (chem_pos+1 not in self.injected) and guide < self.p:
-                    self.set_guide_robot(current_cell, chem_pos+2)
+            guide = np.random.uniform(0, 1)
+            if chem_pos != 2:
+                if (current_chemical[chem_pos + 1] == 0) and (chem_pos + 1 not in self.injected) and guide < self.p:
+                    self.set_guide_robot(current_cell, chem_pos + 2)
 
             self.random_walk(current_cell=current_cell, neighbours=[next_moment])
 
     def actuate(self, grid):
+
         current_cell = grid.get_cell(self.position[0], self.position[1])
         neighbours, n_tissue, n_chemical = self.get_info_neighbours(grid)
 
@@ -139,7 +142,27 @@ class Robot():
         else:
             # Random walk
             self.random_walk(current_cell=current_cell, neighbours=neighbours)
-            
-            
 
-        
+    def get_distance_origin(self, candidate_cell):
+        return np.sqrt(
+            (self.original_position[0] - candidate_cell.get_position()[0]) ** 2 +
+            (self.original_position[1] - candidate_cell.get_position()[1]) ** 2)
+
+    def exit(self, grid):
+        current_cell = grid.get_cell(self.position[0], self.position[1])
+        neighbours, _, _ = self.get_info_neighbours(grid)
+
+        if self.original_position != self.position:
+            error_probability = np.random.uniform(0, 1)
+            if error_probability < 0.3:
+                self.random_walk(current_cell=current_cell, neighbours=neighbours)
+            else:
+                position_by_distance = {self.get_distance_origin(n): i for i, n in
+                                        enumerate(neighbours)}
+                #print(position_by_distance, self.position)
+                for i_distance in np.sort(list(position_by_distance.keys())):
+                    target_cell = neighbours[position_by_distance[i_distance]]
+                    if not target_cell.get_robot():
+                        #print(target_cell.get_position())
+                        self.random_walk(current_cell=current_cell, neighbours=[target_cell])
+                        break

@@ -12,7 +12,7 @@ environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 class Simulation():
 
     def __init__(self, path_grid, iterations, colors, block_size=20, fps=1, alfa=0.1, beta=0.1, gamma=1,
-                 initial_charge_chem=1, tita=0.1, p=0.1, early_stop=False):
+                 initial_charge_chem=1, tita=0.1, p=0.1, early_stop=False, return_position=None):
         self.alfa = alfa
         self.gamma = gamma
         self.colors = colors
@@ -27,6 +27,7 @@ class Simulation():
         self.clock = pygame.time.Clock()
         self.screen.fill(self.colors['cell'])
         self.early_stop = early_stop
+        self.return_position = return_position
 
     def run(self):
         tissue_amount = [self.grid.get_tissue_amount()]
@@ -34,8 +35,8 @@ class Simulation():
         self.draw_grid(tissue_amount)
         pygame.display.update()
         self.clock.tick(self.fps)
-        for _ in range(self.iterations):
-            print("\n Iteration: ", _, '--------' * 10)
+        for i in range(self.iterations):
+            print("\n Iteration: ", i, '--------' * 10)
 
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -54,12 +55,29 @@ class Simulation():
             if self.early_stop and tissue_amount[-1] == 0:
                 break
 
+        if self.return_position:
+            start_iter = i
+            for i in range(start_iter, start_iter + self.iterations//2):
+                print("\n Iteration: ", i, '--------' * 10)
+                for event in pygame.event.get():
+                    if event.type == pygame.QUIT:
+                        pygame.quit()
+                        sys.exit()
+
+                for robot in self.robots:
+                    robot.exit(self.grid)
+
+                tissue_amount = self.draw_grid(tissue_amount)
+                pygame.display.update()
+                self.clock.tick(self.fps)
+
         self.print_tissue_decay(tissue_amount)
 
     def draw_robot(self, position):
         i_pos = (position[0] * self.block_size) + (self.block_size / 2)
         j_pos = (position[1] * self.block_size) + (self.block_size / 2)
         new_position = (j_pos, i_pos)
+
         pygame.draw.circle(self.screen, self.colors['edge'], new_position, 5)
 
     def draw_tissue(self, position):
@@ -76,16 +94,13 @@ class Simulation():
 
         color = list(self.colors['cell'])
         if chemical[0] > 0:
-            color[1] = 50
-            color[2] = 50
+            color = self.colors['chem1']
 
         elif chemical[1] > 0:
-            color[0] = 50
-            color[2] = 50
+            color = self.colors['chem2']
 
         elif chemical[2] > 0:
-            color[0] = 50
-            color[1] = 50
+            color = self.colors['chem3']
 
         rect = pygame.Rect(j_pos, i_pos, self.block_size - 2, self.block_size - 2)
 
@@ -116,6 +131,7 @@ class Simulation():
         tissue_amount.append(tissue)
 
         return tissue_amount
+
 
     def print_tissue_decay(self, serie):
         plt.figure(figsize=(10, 5))
