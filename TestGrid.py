@@ -1,10 +1,10 @@
-from Simulation import Simulation
+from objects.Simulation import Simulation
 
 
 def main():
-    path_grid = './boards/l_test_3.txt'
-    # path_grid = './boards/grid1.txt'
+    path_grid = 'boards/board_3.txt'
     fps = 15
+    block_size = 10
     iterations = 500
     colors = {'cell': (255, 255, 255), 'edge': (0, 0, 0), 'robot': (255, 0, 0), 'tissue': (18, 157, 36),
               'exit': (155, 0, 255), 'chem1': (255, 50, 50), 'chem2': (50, 255, 50), 'chem3': (50, 50, 255)}
@@ -17,9 +17,7 @@ def main():
     early_stop = True
     return_position = iterations // 2
     not_lost = (90, 5)  # use to ensure robots are not lost, to no use it, set to None
-    #not_lost = None
-    allowed_movements_without_any_find = 70
-    max_distance_to_consider_center = 5
+    not_lost = None
 
     simulation = Simulation(
         path_grid=path_grid,
@@ -34,7 +32,8 @@ def main():
         initial_charge_chem=initial_charge_chem,
         early_stop=early_stop,
         return_position=return_position,
-        not_lost = not_lost
+        not_lost=not_lost,
+        block_size=block_size
     )
 
     simulation.run()

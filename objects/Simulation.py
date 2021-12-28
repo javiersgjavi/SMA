@@ -4,7 +4,7 @@ from os import environ
 import matplotlib.pyplot as plt
 import pygame
 
-from Grid import Grid
+from objects.Grid import Grid
 
 environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
@@ -79,7 +79,7 @@ class Simulation():
         j_pos = (position[1] * self.block_size) + (self.block_size / 2)
         new_position = (j_pos, i_pos)
 
-        pygame.draw.circle(self.screen, self.colors['edge'], new_position, 5)
+        pygame.draw.circle(self.screen, self.colors['edge'], new_position, self.block_size / 4)
 
     def draw_tissue(self, position):
         i_pos = (position[0] * self.block_size) + (self.block_size / 4)
@@ -115,7 +115,7 @@ class Simulation():
         for i in range(0, self.width):
             for j in range(0, self.height):
                 rect = pygame.Rect(i * self.block_size, j * self.block_size, self.block_size, self.block_size)
-                pygame.draw.rect(self.screen, self.colors['edge'], rect, 1)
+                pygame.draw.rect(self.screen, self.colors['edge'], rect, self.block_size/20)
 
         tissue = 0
         for i in range(self.width):
@@ -142,3 +142,4 @@ class Simulation():
         plt.plot(serie)
         plt.axis([0, None, 0, None])
         plt.show()
+        pygame.quit()

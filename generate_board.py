@@ -1,15 +1,18 @@
 import os
+import pandas as pd
+import numpy as np
 
 
-def main(path, size):
-    row = '0,' * size
-    if os.path.exists(path):
-        os.remove(path)
+def main(path, shape_board, central_point, side):
+    array = np.zeros((shape_board, shape_board)).reshape(shape_board, shape_board)
+    board = pd.DataFrame(array, dtype=int)
+    print(board.shape)
+    for i in range(central_point[0] - side // 2, central_point[0] + side // 2):
+        for j in range(central_point[1] - side // 2, central_point[1] + side // 2):
+            board.iloc[i, j] = 'X'
 
-    for _ in range(size):
-        with open(path, 'a') as f:
-            f.write(row[:-1] + '\n')
+    board.to_csv(path, index=False, header=False)
 
 
 if __name__ == '__main__':
-    main('./boards/l_test_3.txt', 50)
+    main(path='boards/board_3.txt', shape_board=100, central_point=(50, 50), side=30)

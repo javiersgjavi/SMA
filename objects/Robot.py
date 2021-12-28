@@ -132,7 +132,6 @@ class Robot():
 
         # If the it is a guide robot, continue injecting chemical
         if self.is_lost:
-            print('IS LOST')
             self.exit(grid)
 
         else:
@@ -184,10 +183,8 @@ class Robot():
             else:
                 position_by_distance = {self.get_distance_origin(n): i for i, n in
                                         enumerate(neighbours)}
-                # print(position_by_distance, self.position)
                 for i_distance in np.sort(list(position_by_distance.keys())):
                     target_cell = neighbours[position_by_distance[i_distance]]
                     if not target_cell.get_robot():
-                        # print(target_cell.get_position())
                         self.random_walk(current_cell=current_cell, neighbours=[target_cell])
                         break

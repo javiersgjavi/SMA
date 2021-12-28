@@ -1,7 +1,7 @@
 import pandas as pd
 
-from Cell import Cell
-from Robot import Robot
+from objects.Cell import Cell
+from objects.Robot import Robot
 
 
 class Grid():
