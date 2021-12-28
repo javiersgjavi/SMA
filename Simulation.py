@@ -12,14 +12,14 @@ environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 class Simulation():
 
     def __init__(self, path_grid, iterations, colors, block_size=20, fps=1, alfa=0.1, beta=0.1, gamma=1,
-                 initial_charge_chem=1, tita=0.1, p=0.1, early_stop=False, return_position=None):
+                 initial_charge_chem=1, tita=0.1, p=0.1, early_stop=False, return_position=None, not_lost=None):
         self.alfa = alfa
         self.gamma = gamma
         self.colors = colors
         self.fps = fps
         self.initial_charge = initial_charge_chem
         self.grid = Grid(path=path_grid)
-        self.robots = self.grid.init_board(beta=beta, initial_charge_chem=self.initial_charge, threshold=tita, p=p)
+        self.robots = self.grid.init_board(beta=beta, initial_charge_chem=self.initial_charge, threshold=tita, p=p, not_lost = not_lost)
         self.iterations = iterations
         self.width, self.height = self.grid.get_shape()
         self.block_size = block_size
@@ -28,6 +28,7 @@ class Simulation():
         self.screen.fill(self.colors['cell'])
         self.early_stop = early_stop
         self.return_position = return_position
+
 
     def run(self):
         tissue_amount = [self.grid.get_tissue_amount()]

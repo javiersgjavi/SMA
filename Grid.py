@@ -17,7 +17,7 @@ class Grid():
             row = grid.iloc[i, :].values.tolist()
             self.board.append(row)
 
-    def init_board(self, beta, initial_charge_chem, threshold, p):
+    def init_board(self, beta, initial_charge_chem, threshold, p, not_lost):
         robots = []
 
         for i in range(self.width):
@@ -26,7 +26,15 @@ class Grid():
                 value = self.board[i][j]
 
                 if value == 'X':
-                    robot = Robot(position=(i, j), beta=beta, charge_chem=initial_charge_chem, threshold=threshold, p=p)
+                    if not not_lost:
+                        lost_limit = None
+                        max_distance = None
+                    else:
+                        lost_limit= not_lost[0]
+                        max_distance = not_lost[1]
+
+                    robot = Robot(position=(i, j), beta=beta, charge_chem=initial_charge_chem, threshold=threshold,
+                                      p=p, lost_limit=lost_limit, max_distance=max_distance)
                     robots.append(robot)
                     cell = Cell(position=(i, j), robot=True)
 

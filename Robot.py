@@ -6,7 +6,7 @@ import itertools
 class Robot():
     new_id = itertools.count()
 
-    def __init__(self, position, beta, charge_chem, threshold, p):
+    def __init__(self, position, beta, charge_chem, threshold, p, lost_limit, max_distance):
         self.id = next(self.new_id)
         self.movements = [(i, j) for i in range(-1, 2) for j in range(-1, 2) if not (i == 0 and j == 0)]
         self.position = position
@@ -19,6 +19,10 @@ class Robot():
         self.is_guide = False
         self.injected = []
         self.threshold = 0.5
+        self.movements_without_any_find = 0
+        self.is_lost = False
+        self.lost_limit = lost_limit
+        self.max_distance = max_distance
 
     def get_id(self):
         return self.id
@@ -119,29 +123,47 @@ class Robot():
         current_cell = grid.get_cell(self.position[0], self.position[1])
         neighbours, n_tissue, n_chemical = self.get_info_neighbours(grid)
 
+        if self.lost_limit:
+            if self.movements_without_any_find >= self.lost_limit:
+                self.is_lost = True
+            elif self.movements_without_any_find == 0 or self.get_distance_origin(current_cell) <= self.max_distance:
+                self.is_lost = False
+                self.movements_without_any_find = 0
+
         # If the it is a guide robot, continue injecting chemical
-        if self.is_guide:
-            print(f'Robot {self.get_id()} is guide')
-            self.liberate_chemical(current_cell, self.injected[-1])
+        if self.is_lost:
+            print('IS LOST')
+            self.exit(grid)
 
-        elif current_cell.get_tissue() != 0:
-            print(f'Robot {self.get_id()} attack tissue')
-            current_cell.attack_tissue()
-
-            # Liberate chem
-            if current_cell.get_chemical()[0] == 0 and (1 not in self.injected):
-                print(f'Robot {self.get_id()} starts to inject chemical 1')
-                self.set_guide_robot(current_cell, 1)
-
-        elif n_tissue:
-            print(f'Robot {self.get_id()} goes to tissue')
-            self.random_walk(current_cell=current_cell, neighbours=n_tissue)
-
-        elif n_chemical and not (current_cell.get_chemical()[0] > self.threshold):
-            self.get_chemical_decision(current_cell, n_chemical)
         else:
-            # Random walk
-            self.random_walk(current_cell=current_cell, neighbours=neighbours)
+
+            if self.is_guide:
+                print(f'Robot {self.get_id()} is guide')
+                self.movements_without_any_find = 0
+                self.liberate_chemical(current_cell, self.injected[-1])
+
+            elif current_cell.get_tissue() != 0:
+                print(f'Robot {self.get_id()} attack tissue')
+                self.movements_without_any_find = 0
+                current_cell.attack_tissue()
+
+                # Liberate chem
+                if current_cell.get_chemical()[0] == 0 and (1 not in self.injected):
+                    print(f'Robot {self.get_id()} starts to inject chemical 1')
+                    self.set_guide_robot(current_cell, 1)
+
+            elif n_tissue:
+                print(f'Robot {self.get_id()} goes to tissue')
+                self.movements_without_any_find = 0
+                self.random_walk(current_cell=current_cell, neighbours=n_tissue)
+
+            elif n_chemical and not (current_cell.get_chemical()[0] > self.threshold):
+                self.movements_without_any_find = 0
+                self.get_chemical_decision(current_cell, n_chemical)
+            else:
+                # Random walk
+                self.random_walk(current_cell=current_cell, neighbours=neighbours)
+                self.movements_without_any_find += 1
 
     def get_distance_origin(self, candidate_cell):
         return np.sqrt(
@@ -149,6 +171,9 @@ class Robot():
             (self.original_position[1] - candidate_cell.get_position()[1]) ** 2)
 
     def exit(self, grid):
+        if self.is_lost:
+            self.movements_without_any_find -= 1
+
         current_cell = grid.get_cell(self.position[0], self.position[1])
         neighbours, _, _ = self.get_info_neighbours(grid)
 
@@ -159,10 +184,10 @@ class Robot():
             else:
                 position_by_distance = {self.get_distance_origin(n): i for i, n in
                                         enumerate(neighbours)}
-                #print(position_by_distance, self.position)
+                # print(position_by_distance, self.position)
                 for i_distance in np.sort(list(position_by_distance.keys())):
                     target_cell = neighbours[position_by_distance[i_distance]]
                     if not target_cell.get_robot():
-                        #print(target_cell.get_position())
+                        # print(target_cell.get_position())
                         self.random_walk(current_cell=current_cell, neighbours=[target_cell])
                         break
