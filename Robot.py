@@ -73,7 +73,6 @@ class Robot():
     def liberate_chemical(self, cell, chem):
         cell.inject_chemical(chem, self.injection_value)
         print(f'Robot {self.get_id()} liberating chemical {chem} in cell {cell.get_position()}')
-        #print(self.injection_value, 'injection value')
         self.injection_value -= self.beta*self.injection_value
         if round(self.injection_value, 4) == 0:
             self.is_guide = False
@@ -138,7 +137,6 @@ class Robot():
         elif n_chemical and not (current_cell.get_chemical()[0] > self.threshold):
             self.get_chemical_decision(current_cell, n_chemical)
         else:
-            print(f'Robot {self.get_id()} does a random walk')
             # Random walk
             self.random_walk(current_cell=current_cell, neighbours=neighbours)
             
