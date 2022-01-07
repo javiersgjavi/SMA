@@ -1,12 +1,9 @@
 import sys
-from os import environ
 
 import matplotlib.pyplot as plt
 import pygame
 
 from objects.Grid import Grid
-
-environ['PYGAME_HIDE_SUPPORT_PROMPT'] = '1'
 
 
 class Simulation():
@@ -19,7 +16,8 @@ class Simulation():
         self.fps = fps
         self.initial_charge = initial_charge_chem
         self.grid = Grid(path=path_grid)
-        self.robots = self.grid.init_board(beta=beta, initial_charge_chem=self.initial_charge, threshold=tita, p=p, not_lost = not_lost)
+        self.robots = self.grid.init_board(beta=beta, initial_charge_chem=self.initial_charge, threshold=tita, p=p,
+                                           not_lost=not_lost)
         self.iterations = iterations
         self.width, self.height = self.grid.get_shape()
         self.block_size = block_size
@@ -28,7 +26,6 @@ class Simulation():
         self.screen.fill(self.colors['cell'])
         self.early_stop = early_stop
         self.return_position = return_position
-
 
     def run(self):
         tissue_amount = [self.grid.get_tissue_amount()]
@@ -58,7 +55,7 @@ class Simulation():
 
         if self.return_position:
             start_iter = i
-            for i in range(start_iter, start_iter + self.iterations//2):
+            for i in range(start_iter, start_iter + self.iterations // 2):
                 print("\n Iteration: ", i, '--------' * 10)
                 for event in pygame.event.get():
                     if event.type == pygame.QUIT:
@@ -115,7 +112,8 @@ class Simulation():
         for i in range(0, self.width):
             for j in range(0, self.height):
                 rect = pygame.Rect(i * self.block_size, j * self.block_size, self.block_size, self.block_size)
-                pygame.draw.rect(self.screen, self.colors['edge'], rect, self.block_size/20)
+                rect_size = 1 if self.block_size < 20 else self.block_size // 20
+                pygame.draw.rect(self.screen, self.colors['edge'], rect, rect_size)
 
         tissue = 0
         for i in range(self.width):
@@ -132,7 +130,6 @@ class Simulation():
         tissue_amount.append(tissue)
 
         return tissue_amount
-
 
     def print_tissue_decay(self, serie):
         plt.figure(figsize=(10, 5))
